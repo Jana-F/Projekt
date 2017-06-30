@@ -19,17 +19,21 @@ api_secret = config['twitter']['secret']
 session = twitter_session(api_key, api_secret)
 
 
-def add_new_user(twitter_id, screen_name):
+def add_new_user(twitter_id, screen_name, do_check):
     cur.execute("""SELECT id FROM twitter_user WHERE id = %s;""", (twitter_id,))
     row = cur.fetchall()
     if row == []:
-        cur.execute("""INSERT INTO twitter_user(id, nick) VALUES (%s, %s);""", (twitter_id, screen_name))
+        cur.execute("""INSERT INTO twitter_user(id, nick, do_check) VALUES (%s, %s, %s);""", (twitter_id, screen_name, do_check ))
         conn.commit()
 
 
 def add_followers(who, whom, followed_at):
-    cur.execute("""INSERT INTO follows(who, whom, followed_at) VALUES (%s, %s, %s);""", (who, whom, followed_at))
-    conn.commit()
+    try:
+        cur.execute("""INSERT INTO follows(who, whom, followed_at) VALUES (%s, %s, %s);""", (who, whom, followed_at))
+        conn.commit()
+    except:
+        conn.rollback()
+
 
 
 def get_user_details(screen_name):
@@ -49,10 +53,10 @@ def download_followers(name):
 
         followers = r.json()["users"]
         followed_id = get_user_details(name)
-        add_new_user(followed_id, name)
+        add_new_user(followed_id, name, True)
         now = datetime.now()
         for follower in followers:
-            add_new_user(follower["id"], follower["screen_name"])
+            add_new_user(follower["id"], follower["screen_name"], False)
             add_followers(follower["id"],followed_id, now)
 
         next_cursor = r.json()["next_cursor"]
@@ -61,6 +65,3 @@ def download_followers(name):
 
 
 download_followers('yedpodtrzitko')
-# add_new_user(321, "Pavel")
-now = datetime.now()
-# add_followers(123, 678, now)
