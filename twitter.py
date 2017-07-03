@@ -95,5 +95,6 @@ def count_followers(screen_name, from_date, to_date):
     return number_of_followers
 
 
-download_followers('yedpodtrzitko')
-count_followers('yedpodtrzitko', '2017-06-30', '2017-07-02')
+if __name__ == '__main__':
+    download_followers('yedpodtrzitko')
+    count_followers('yedpodtrzitko', '2017-06-30', '2017-07-02')
