@@ -3,17 +3,10 @@ from plotly.graph_objs import Scatter, Layout, Figure
 
 
 def render_graph(followers_data):
-    dates = []
-    for record in followers_data:
-        dates.append(record[0])
-
-    followers_per_day = []
-    for record in followers_data:
-        followers_per_day.append(record[1])
 
     # prvni graf, tecky
     trace1 = Scatter(
-        x=dates,
+        x=followers_data[0],
         y=[1, 2, 0, 2, 3, 0],
         mode='markers',
         marker={
@@ -29,7 +22,7 @@ def render_graph(followers_data):
 
     # druhý graf, čtverečky
     trace2 = Scatter(
-        x=dates,
+        x=followers_data[0],
         y=[4, 3, 1, 2, 1, 2],
         mode='markers',
         marker={
@@ -46,8 +39,8 @@ def render_graph(followers_data):
 
     # treti graf, souvisla cara
     trace3 = Scatter(
-        x=dates,
-        y=followers_per_day,
+        x=followers_data[0],
+        y=followers_data[1],
         mode='lines',
         name='followers',
     )
