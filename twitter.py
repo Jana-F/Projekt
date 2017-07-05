@@ -92,5 +92,9 @@ def count_followers(screen_name, from_date, to_date):
         WHERE followed_at BETWEEN %s AND %s and whom = %s
         GROUP BY followed_at ORDER BY followed_at;''', (first_day, last_day, followed_id))
     number_of_followers = cur.fetchall()
-    print(number_of_followers)
-    return number_of_followers
+    dates = []
+    followers_per_day = []
+    for record in number_of_followers:
+        dates.append(record[0])
+        followers_per_day.append(record[1])
+    return dates, followers_per_day
