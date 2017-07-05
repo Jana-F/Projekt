@@ -7,6 +7,9 @@ def render_graph(followers_data):
     for record in followers_data:
         dates.append(record[0])
 
+    followers_per_day = []
+    for record in followers_data:
+        followers_per_day.append(record[1])
 
     # prvni graf, tecky
     trace1 = Scatter(
@@ -24,7 +27,7 @@ def render_graph(followers_data):
         yaxis='y2'
     )
 
-    # prvni graf, tecky
+    # druhý graf, čtverečky
     trace2 = Scatter(
         x=dates,
         y=[4, 3, 1, 2, 1, 2],
@@ -44,7 +47,7 @@ def render_graph(followers_data):
     # treti graf, souvisla cara
     trace3 = Scatter(
         x=dates,
-        y=[50, 100, 80, 110, 150, 90],
+        y=followers_per_day,
         mode='lines',
         name='followers',
     )
@@ -54,18 +57,31 @@ def render_graph(followers_data):
     layout = Layout(
         title='Double Y Axis Example',
         xaxis=dict(
+            title='dates',
             zeroline=True,
             showline=True,
+            titlefont=dict(
+                color='rgb(148, 103, 189)'
+            ),
+            tickfont=dict(
+                color='rgb(148, 103, 189)'
+            )
          ),
         yaxis=dict(
             title='followers',
-            range=[0, 160],
+            range=[0, 400],
             zeroline=True,
-            showline = True
+            showline = True,
+            titlefont=dict(
+                color='rgb(148, 103, 189)'
+            ),
+            tickfont = dict(
+                color='rgb(148, 103, 189)'
+            )
         ),
         yaxis2=dict(
             title='tweets, likes',
-            range=[0, 4],
+            range=[0, 5],
             zeroline=True,
             showline=True,
             titlefont=dict(
@@ -88,5 +104,3 @@ def render_graph(followers_data):
     plotly.offline.plot(
         fig
            )
-
-#followers_week =[(datetime.date(2017, 7, 1), 372), (datetime.date(2017, 7, 3), 372), (datetime.date(2017, 7, 5), 372), (datetime.date(2017, 6, 30), 372), (datetime.date(2017, 7, 4), 372), (datetime.date(2017, 7, 2), 372)]ender_graph(followers_data)
