@@ -90,11 +90,7 @@ def count_followers(screen_name, from_date, to_date):
     followed_id = get_user_details(screen_name)
     cur.execute('''SELECT followed_at, COUNT(*) FROM follows 
         WHERE followed_at BETWEEN %s AND %s and whom = %s
-        GROUP BY followed_at;''', (first_day, last_day, followed_id))
+        GROUP BY followed_at ORDER BY followed_at;''', (first_day, last_day, followed_id))
     number_of_followers = cur.fetchall()
+    print(number_of_followers)
     return number_of_followers
-
-
-if __name__ == '__main__':
-    download_followers('yedpodtrzitko')
-    count_followers('yedpodtrzitko', '2017-06-30', '2017-07-02')
