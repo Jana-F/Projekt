@@ -21,15 +21,15 @@ api_secret = config['twitter']['secret']
 session = twitter_session(api_key, api_secret)
 
 
-def add_new_user(twitter_id, screen_name, do_check):
+def add_new_user(user_id, screen_name, do_check):
     """
     This function verifies, if the user is in the database. If not, this function inserts his id and nick to the table 'twitter_user'.
     It also inserts the information if the check is necessary.
     """
-    cur.execute('''SELECT id FROM twitter_user WHERE id = %s;''', (twitter_id,))        # 2nd parameter for execute() must be tuple
+    cur.execute('''SELECT id FROM twitter_user WHERE id = %s;''', (user_id,))        # 2nd parameter for execute() must be tuple
     row = cur.fetchall()
     if row == []:
-        cur.execute('''INSERT INTO twitter_user(id, nick, do_check) VALUES (%s, %s, %s);''', (twitter_id, screen_name, do_check))
+        cur.execute('''INSERT INTO twitter_user(id, nick, do_check) VALUES (%s, %s, %s);''', (user_id, screen_name, do_check))
         conn.commit()
 
 
@@ -56,7 +56,7 @@ def get_user_details(screen_name):
     return id
 
 
-def download_followers(name):
+def download_followers(screen_name):
     """
     This function downloads a dictionary from api.twitter.com. It contains a list of followers for the particular user
     listed in the function parameter and the 'cursor' information to allow paging. Each page has up to 200 entries.
@@ -66,12 +66,12 @@ def download_followers(name):
     next_cursor = -1
     while next_cursor != 0:
         r = session.get('https://api.twitter.com/1.1/followers/list.json',
-                        params={'screen_name': name, 'cursor': next_cursor, 'count': 200},
+                        params={'screen_name': screen_name, 'cursor': next_cursor, 'count': 200}
                         )
 
         followers = r.json()['users']
-        followed_id = get_user_details(name)
-        add_new_user(followed_id, name, True)
+        followed_id = get_user_details(screen_name)
+        add_new_user(followed_id, screen_name, True)
         now = datetime.now()
         for follower in followers:
             add_new_user(follower['id'], follower['screen_name'], False)
@@ -84,6 +84,7 @@ def download_followers(name):
 def count_followers(screen_name, from_date, to_date):
     """
     The function counts all followers for the particular user and for each day within the specified period.
+    It returns a dictionary that contains a list of dates and a list of numbers of followers for each day.
     """
     first_day = datetime.strptime(from_date, '%Y-%m-%d')
     last_day = datetime.strptime(to_date, '%Y-%m-%d')
@@ -102,3 +103,32 @@ def count_followers(screen_name, from_date, to_date):
         'info_followers_per_day': followers_per_day
     }
     return followers_info
+
+
+def add_tweets_info(tweet_id, user_id, tweet_date, no_likes, no_retweets):
+    """
+    This function inserts information about tweets to the table 'tweets' - tweet_id, user_id, date,
+    number of likes and number of retweets.
+    """
+    cur.execute('''INSERT INTO tweets(tweet_id, user_id, tweet_date, no_likes, no_retweets) 
+        VALUES (%s, %s, %s, %s, %s);''', (tweet_id, user_id, tweet_date, no_likes, no_retweets))
+    conn.commit()
+
+
+def count_tweets(screen_name):
+    """
+    ...
+    """
+    r = session.get('https://api.twitter.com/1.1/statuses/user_timeline.json',
+                    params={'screen_name': screen_name, 'count': 5}
+                    )
+    tweets = r.json()
+    for tweet in tweets:
+        print(tweet)
+    """
+    for tweet in tweets:
+        for key, value in tweet.items():
+            print("{} : {}".format(key, value))
+    """
+
+count_tweets('yedpodtrzitko')
