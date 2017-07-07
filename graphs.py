@@ -1,12 +1,13 @@
+from math import floor, ceil
+
 import plotly
 from plotly.graph_objs import Scatter, Layout, Figure
 
 
-def render_graph(followers_data):
-
+def render_graph(graph_data: dict):
     # prvni graf, tecky
     trace1 = Scatter(
-        x=followers_data[0],
+        x=graph_data['info_date_when'],
         y=[1, 2, 0, 2, 3, 0],
         mode='markers',
         marker={
@@ -22,7 +23,7 @@ def render_graph(followers_data):
 
     # druhý graf, čtverečky
     trace2 = Scatter(
-        x=followers_data[0],
+        x=graph_data['info_date_when'],
         y=[4, 3, 1, 2, 1, 2],
         mode='markers',
         marker={
@@ -39,16 +40,20 @@ def render_graph(followers_data):
 
     # treti graf, souvisla cara
     trace3 = Scatter(
-        x=followers_data[0],
-        y=followers_data[1],
+        x=graph_data['info_date_when'],
+        y=graph_data['info_followers_per_day'],
         mode='lines',
         name='followers',
     )
 
     data = [trace1, trace2, trace3]
 
+    min_followers = min(graph_data['info_followers_per_day'])
+    max_followers = max(graph_data['info_followers_per_day'])
+    min_followers = floor(min_followers / 100) * 100  # round to bottom 100
+    max_followers = ceil(max_followers / 100) * 100  # round to upper 100
     layout = Layout(
-        title='Double Y Axis Example',
+        title='Twitter Statistics for {}'.format(graph_data['user']['screen_name']),
         xaxis=dict(
             title='dates',
             zeroline=True,
@@ -59,16 +64,16 @@ def render_graph(followers_data):
             tickfont=dict(
                 color='rgb(148, 103, 189)'
             )
-         ),
+        ),
         yaxis=dict(
             title='followers',
-            range=[0, 400],
+            range=[min_followers, max_followers],
             zeroline=True,
-            showline = True,
+            showline=True,
             titlefont=dict(
                 color='rgb(148, 103, 189)'
             ),
-            tickfont = dict(
+            tickfont=dict(
                 color='rgb(148, 103, 189)'
             )
         ),
@@ -96,4 +101,4 @@ def render_graph(followers_data):
     fig = Figure(data=data, layout=layout)
     plotly.offline.plot(
         fig
-           )
+    )
