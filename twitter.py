@@ -23,13 +23,14 @@ session = twitter_session(api_key, api_secret)
 
 def add_new_user(user_id, screen_name, do_check):
     """
-    This function verifies, if the user is in the database. If not, this function inserts his id and nick to the table 'twitter_user'.
-    It also inserts the information if the check is necessary.
+    This function verifies, if the user is in the database. If not, this function inserts his id and nick to the table
+    'twitter_user'.     It also inserts the information if the check is necessary.
     """
     cur.execute('''SELECT id FROM twitter_user WHERE id = %s;''', (user_id,))        # 2nd parameter for execute() must be tuple
     row = cur.fetchall()
     if row == []:
-        cur.execute('''INSERT INTO twitter_user(id, nick, do_check) VALUES (%s, %s, %s);''', (user_id, screen_name, do_check))
+        cur.execute('''INSERT INTO twitter_user(id, nick, do_check) VALUES (%s, %s, %s);''',
+                    (user_id, screen_name, do_check))
         conn.commit()
 
 
@@ -144,3 +145,17 @@ def download_tweets(screen_name):
         else:
             update_tweets_info(tweet['favorite_count'], tweet['retweet_count'], tweet['id'])
             conn.commit()
+
+
+def count_tweets(screen_name, from_date, to_date):
+    """
+    This function counts all tweets for the particular user and for each day within the specified period.
+    """
+    first_day = datetime.strptime(from_date, '%Y-%m-%d')
+    last_day = datetime.strptime(to_date, '%Y-%m-%d')
+    followed_id = get_user_details(screen_name)
+    cur.execute('''SELECT tweet_date, COUNT(*) FROM tweets
+        WHERE tweet_date BETWEEN %s AND %s AND user_id = %s
+        GROUP BY tweet_date ORDER BY tweet_date'''), (first_day, last_day, followed_id)
+    number_of_tweets = cur.fetchall
+    
