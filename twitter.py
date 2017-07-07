@@ -115,20 +115,32 @@ def add_tweets_info(tweet_id, user_id, tweet_date, no_likes, no_retweets):
     conn.commit()
 
 
-def count_tweets(screen_name):
+def update_tweets_info(no_likes, no_retweets, tweet_id):
     """
-    ...
+    This function updates number of likes and number of retweets in tweets table.
+    """
+    cur.execute('''UPDATE tweets SET(no_likes, no_retweets) = (%s, %s) WHERE tweet_id = (%s);''',
+                (no_likes, no_retweets, tweet_id))
+    conn.commit()
+
+
+def download_tweets(screen_name):
+    """
+    This function downloads a list of dictionaries from api.twitter.com. It contains information about
+    tweets and twitter user. Using the add_tweet_info function, the information is inserted to the database.
+    It inserts only original tweets (no retweets).
     """
     r = session.get('https://api.twitter.com/1.1/statuses/user_timeline.json',
-                    params={'screen_name': screen_name, 'count': 5}
+                    params={'screen_name': screen_name, 'count': 200, 'include_rts': False}
                     )
     tweets = r.json()
     for tweet in tweets:
-        print(tweet)
-    """
-    for tweet in tweets:
-        for key, value in tweet.items():
-            print("{} : {}".format(key, value))
-    """
-
-count_tweets('yedpodtrzitko')
+        cur.execute('''SELECT tweet_id FROM tweets WHERE tweet_id = %s;''', (tweet['id'],))
+        row = cur.fetchone()
+        if row is None:
+            add_tweets_info(tweet['id'], tweet['user']['id'], tweet['created_at'], tweet['favorite_count'],
+                            tweet['retweet_count'])
+            conn.commit()
+        else:
+            update_tweets_info(tweet['favorite_count'], tweet['retweet_count'], tweet['id'])
+            conn.commit()
