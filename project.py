@@ -1,8 +1,14 @@
+from datetime import datetime
+
 from graphs import render_graph
-from twitter import download_followers, count_followers, download_tweets
+from twitter import download_followers, count_followers, download_tweets, get_user
 
 if __name__ == '__main__':
-    # download_followers('yedpodtrzitko')
-    followers_date_and_sum = count_followers('yedpodtrzitko', '2017-06-30', '2017-07-06')
-    download_tweets('yedpodtrzitko')
-    render_graph(followers_date_and_sum)
+    user = get_user('yedpodtrzitko')
+    since = datetime(2017, 6, 30)
+    til = datetime(2017, 7, 6)
+    #download_followers(user)
+    graph_data = count_followers(user, since, til)
+    graph_data['user'] = user
+    download_tweets(user)
+    render_graph(graph_data)
