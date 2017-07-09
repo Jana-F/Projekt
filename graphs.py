@@ -12,7 +12,7 @@ def render_graph(graph_data: dict):
         mode='markers',
         marker={
             'size': 25,
-            'color': 'rgba(255, 182, 193, .9)',
+            'color': 'rgba(191, 63, 63, .9)',
             'line': {
                 'width': 3,
             }
@@ -29,7 +29,7 @@ def render_graph(graph_data: dict):
         marker={
             'symbol': 'square',
             'size': 15,
-            'color': 'rgba(120, 255, 193, .9)',
+            'color': 'rgba(213, 143, 143, .9)',
             'line': {
                 'width': 2,
             }
@@ -57,13 +57,7 @@ def render_graph(graph_data: dict):
         xaxis=dict(
             title='dates',
             zeroline=True,
-            showline=True,
-            titlefont=dict(
-                color='rgb(148, 103, 189)'
-            ),
-            tickfont=dict(
-                color='rgb(148, 103, 189)'
-            )
+            showline=True
         ),
         yaxis=dict(
             title='followers',
@@ -71,10 +65,10 @@ def render_graph(graph_data: dict):
             zeroline=True,
             showline=True,
             titlefont=dict(
-                color='rgb(148, 103, 189)'
+                color='rgb(63, 191, 63)'
             ),
             tickfont=dict(
-                color='rgb(148, 103, 189)'
+                color='rgb(63, 191, 63)'
             )
         ),
         yaxis2=dict(
@@ -83,10 +77,10 @@ def render_graph(graph_data: dict):
             zeroline=True,
             showline=True,
             titlefont=dict(
-                color='rgb(148, 103, 189)'
+                color='rgb(191, 63, 63)'
             ),
             tickfont=dict(
-                color='rgb(148, 103, 189)'
+                color='rgb(191, 63, 63)'
             ),
             overlaying='y',
             side='right'
