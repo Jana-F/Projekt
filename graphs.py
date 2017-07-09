@@ -4,11 +4,11 @@ import plotly
 from plotly.graph_objs import Scatter, Layout, Figure
 
 
-def render_graph(graph_data: dict):
+def render_graph(graph_data: dict, graph_tweets: dict):
     # prvni graf, tecky
     trace1 = Scatter(
         x=graph_data['info_date_when'],
-        y=[1, 2, 0, 2, 3, 0],
+        y=graph_tweets['info_tweets_per_day'],
         mode='markers',
         marker={
             'size': 25,
