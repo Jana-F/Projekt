@@ -1,5 +1,5 @@
 import psycopg2
-from datetime import datetime
+from datetime import datetime,timedelta
 from twitter_wall import twitter_session
 import configparser
 
@@ -40,8 +40,8 @@ session, conn, cur = init_connections()
 
 def add_new_user(user_id: int, screen_name: str, do_check: bool = False):
     """
-    This function verifies, if the user is in the database. If not, this function inserts his id and nick to the table
-    'twitter_user'.     It also inserts the information if the check is necessary.
+    This function verifies, if the user is in the database. If not, this function inserts his id, nick and
+    do_check to the table 'twitter_user'.
     """
 
     cur.execute('''SELECT id FROM twitter_user WHERE id = %s;''', (user_id,))
@@ -66,7 +66,7 @@ def add_followers(who: int, whom: int, followed_at: datetime):
 
 def get_user_details(screen_name: str):
     """
-    The function connects to api.twitter.com and returns the id of the user whose nick we typed as the parameter.
+    The function connects to api.twitter.com and returns info about the user whose nick we typed as the parameter.
     """
     r = session.get('https://api.twitter.com/1.1/users/show.json',
                     params={'screen_name': screen_name}
@@ -75,7 +75,11 @@ def get_user_details(screen_name: str):
 
 
 def get_user(screen_name: str = None, user_id: int = None) -> dict:
-    user = cur.execute('SELECT * FROM twitter_user where nick = %s', (screen_name,))
+    """
+    This function checks if the user is in the database. If not, she inserts him to the 'twitter_user' table.
+    The do_check column has the value True for the followed person.
+    """
+    user = cur.execute('''SELECT * FROM twitter_user where nick = %s''', (screen_name,))
     if not user:
         user = get_user_details(screen_name)
         add_new_user(user['id'], screen_name, True)
@@ -92,14 +96,14 @@ def download_followers(user: dict):
     This function downloads a dictionary from api.twitter.com. It contains a list of followers for the particular user
     listed in the function parameter and the 'cursor' information to allow paging. Each page has up to 200 entries.
     Using the 'add_new_user' and 'add_followers' functions, the information from all pages is inserted to the database.
-    Do_check value is True for the followed users and Falls for followers.
+    Do_check value is False for followers.
     """
     now = datetime.now()
     next_cursor = -1
     print(user)
     while next_cursor != 0:
         r = session.get('https://api.twitter.com/1.1/followers/list.json',
-                        params={'screen_name': user['screen_name'], 'cursor': next_cursor, 'count': 20}
+                        params={'screen_name': user['screen_name'], 'cursor': next_cursor, 'count': 200}
                         )
 
         followers = r.json()['users']
@@ -109,15 +113,13 @@ def download_followers(user: dict):
 
         next_cursor = r.json()['next_cursor']
         # print('Number of records:', len(followers), 'next_cursor:', next_cursor)
-        break
 
 
 def count_followers(user: dict, from_date: datetime, to_date: datetime) -> dict:
     """
     The function counts all followers for the particular user and for each day within the specified period.
-    It returns a dictionary that contains a list of dates and a list of numbers of followers for each day.
+    It returns a dictionary that contains a list of dates and a list of number of followers for each day.
     """
-
     cur.execute('''SELECT followed_at, COUNT(*) FROM follows 
         WHERE followed_at BETWEEN %s AND %s and whom = %s
         GROUP BY followed_at ORDER BY followed_at;''', (from_date, to_date, user['id']))
@@ -174,12 +176,27 @@ def download_tweets(user: dict):
             update_tweet_info(tweet)
 
 
-def count_tweets(screen_name: str, from_date: datetime, to_date: datetime):
+def count_tweets(user: dict, from_date: datetime, to_date: datetime):
     """
     This function counts all tweets for the particular user and for each day within the specified period.
+    If the date is not in the database (it means there are no tweets this date) it adds 0 to the list tweets_per_day.
     """
-    followed_id = get_user_details(screen_name)
-    cur.execute('''SELECT tweet_date, COUNT(*) FROM tweets
-        WHERE tweet_date BETWEEN %s AND %s AND user_id = %s
-        GROUP BY tweet_date ORDER BY tweet_date'''), (from_date, to_date, followed_id)
-    number_of_tweets = cur.fetchall()
+    date_tweet = []
+    tweets_per_day = []
+    while from_date <= to_date:
+        cur.execute('''SELECT tweet_date, COUNT(*) FROM tweets
+            WHERE tweet_date = %s and user_id = %s GROUP BY tweet_date''', (from_date, user['id']))
+        number_of_tweets = cur.fetchone()
+        if not number_of_tweets:
+            date_tweet.append(from_date)
+            tweets_per_day.append(0)
+        else:
+            date_tweet.append(number_of_tweets[0])
+            tweets_per_day.append(number_of_tweets[1])
+        from_date = from_date + timedelta(days=1)
+
+    tweets_info = {
+        'info_date_tweet': date_tweet,
+        'info_tweets_per_day': tweets_per_day,
+    }
+    return tweets_info
