@@ -24,7 +24,7 @@ def render_graph(graph_data: dict):
     # druhý graf, čtverečky
     trace2 = Scatter(
         x=graph_data['info_date_when'],
-        y=['info_likes_number'],
+        y=graph_data['info_likes_number'],
         mode='markers',
         marker={
             'symbol': 'square',
