@@ -5,9 +5,11 @@ from plotly.graph_objs import Scatter, Layout, Figure
 
 
 def render_graph(graph_data: dict):
-    # prvni graf, tecky
+
+    # convert dates to timestamp, to the x axis can be considered a real date
+    when = [(int(x.strftime('%s')) * 1000) for x in graph_data['info_date_when']]
     trace1 = Scatter(
-        x=graph_data['info_date_when'],
+        x=when,
         y=graph_data['info_tweets_per_day'],
         mode='markers',
         marker={
@@ -23,7 +25,7 @@ def render_graph(graph_data: dict):
 
     # druhý graf, čtverečky
     trace2 = Scatter(
-        x=graph_data['info_date_when'],
+        x=when,
         y=graph_data['info_likes_number'],
         mode='markers',
         marker={
@@ -40,7 +42,7 @@ def render_graph(graph_data: dict):
 
     # treti graf, souvisla cara
     trace3 = Scatter(
-        x=graph_data['info_date_when'],
+        x=when,
         y=graph_data['info_followers_per_day'],
         mode='lines',
         name='followers',
@@ -50,19 +52,43 @@ def render_graph(graph_data: dict):
 
     min_followers = min(graph_data['info_followers_per_day'])
     max_followers = max(graph_data['info_followers_per_day'])
-    print(max_followers)
+
     min_followers = floor(min_followers / 100) * 100  # round to bottom 100
     max_followers = ceil(max_followers / 100) * 100  # round to upper 100
-    max_tweets_likes = max(max(graph_data['info_tweets_per_day'], graph_data['info_likes_number']))
-    # (max(graph_data['info_tweets_per_day'], graph_data['info_likes_number'])  -> returns a list
-    max_tweets_likes = ceil(max_tweets_likes / 10) * 10 # round to upper 10
-    print(max_tweets_likes)
+    max_tweets_likes = max(graph_data['info_tweets_per_day'] + graph_data['info_likes_number'])
+
+    yaxis2 = dict(
+        title='tweets & likes',
+        showline=True,
+        zeroline=False,
+        titlefont=dict(
+            color='rgb(191, 63, 63)'
+        ),
+        tickfont=dict(
+            color='rgb(191, 63, 63)'
+        ),
+        overlaying='y',
+        side='right',
+
+    )
+
+    if max_tweets_likes < 20:  # use linear axis
+        yaxis2.update(dict(
+            range=[0, max(5, max_tweets_likes)],
+            type='linear',
+        ))
+    else:  # use logarithmic axis
+        yaxis2.update(dict(
+            type='log',
+            autorange=True,
+        ))
+
     layout = Layout(
         title='Twitter Statistics for {}'.format(graph_data['user']['screen_name']),
         xaxis=dict(
             title='dates',
-            zeroline=True,
-            showline=True
+            type='date',
+            showline=True,
         ),
         yaxis=dict(
             title='followers',
@@ -76,21 +102,7 @@ def render_graph(graph_data: dict):
                 color='rgb(63, 191, 63)'
             )
         ),
-        yaxis2=dict(
-            # type='log',      # Logarithmic axis
-            title='tweets & likes',
-            range=[0, max_tweets_likes],
-            zeroline=True,
-            showline=True,
-            titlefont=dict(
-                color='rgb(191, 63, 63)'
-            ),
-            tickfont=dict(
-                color='rgb(191, 63, 63)'
-            ),
-            overlaying='y',
-            side='right'
-        )
+        yaxis2=yaxis2
     )
     '''    
     # tohle by vykreslilo grafy pod sebou    
