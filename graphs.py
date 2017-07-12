@@ -56,7 +56,7 @@ def render_graph(graph_data: dict):
     max_tweets_likes = max(max(graph_data['info_tweets_per_day'], graph_data['info_likes_number']))
     # (max(graph_data['info_tweets_per_day'], graph_data['info_likes_number'])  -> returns a list
     max_tweets_likes = ceil(max_tweets_likes / 10) * 10 # round to upper 10
-
+    print(max_tweets_likes)
     layout = Layout(
         title='Twitter Statistics for {}'.format(graph_data['user']['screen_name']),
         xaxis=dict(
@@ -77,6 +77,7 @@ def render_graph(graph_data: dict):
             )
         ),
         yaxis2=dict(
+            # type='log',      # Logarithmic axis
             title='tweets & likes',
             range=[0, max_tweets_likes],
             zeroline=True,
