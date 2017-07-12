@@ -4,11 +4,11 @@ import plotly
 from plotly.graph_objs import Scatter, Layout, Figure
 
 
-def render_graph(graph_data: dict, graph_tweets: dict):
+def render_graph(graph_data: dict):
     # prvni graf, tecky
     trace1 = Scatter(
         x=graph_data['info_date_when'],
-        y=graph_tweets['info_tweets_per_day'],
+        y=graph_data['info_tweets_per_day'],
         mode='markers',
         marker={
             'size': 25,
@@ -24,7 +24,7 @@ def render_graph(graph_data: dict, graph_tweets: dict):
     # druhý graf, čtverečky
     trace2 = Scatter(
         x=graph_data['info_date_when'],
-        y=[4, 3, 1, 2, 1, 2],
+        y=['info_likes_number'],
         mode='markers',
         marker={
             'symbol': 'square',
@@ -72,8 +72,8 @@ def render_graph(graph_data: dict, graph_tweets: dict):
             )
         ),
         yaxis2=dict(
-            title='tweets, likes',
-            range=[0, 5],
+            title='tweets & likes',
+            range=[0, 10],
             zeroline=True,
             showline=True,
             titlefont=dict(
