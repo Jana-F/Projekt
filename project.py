@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from graphs import render_graph
-from twitter import download_followers, count_followers, download_tweets, get_user, count_tweets
+from twitter import download_followers, count_followers, download_tweets, get_user, count_tweets, count_likes
 
 if __name__ == '__main__':
     user = get_user('yedpodtrzitko')
@@ -12,4 +12,9 @@ if __name__ == '__main__':
     graph_data['user'] = user
     download_tweets(user)
     graph_tweets = count_tweets(user, since, til)
-    render_graph(graph_data, graph_tweets)
+    graph_data.update(graph_tweets)
+    graph_likes = count_likes(user, since, til)
+    graph_data.update(graph_likes)
+    render_graph(graph_data)
+
+    print(count_likes(user, since, til))
