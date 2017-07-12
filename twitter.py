@@ -1,5 +1,5 @@
 import psycopg2
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 from twitter_wall import twitter_session
 import configparser
 
@@ -179,7 +179,7 @@ def download_tweets(user: dict):
 def count_tweets(user: dict, from_date: datetime, to_date: datetime):
     """
     This function counts all tweets for the particular user and for each day within the specified period.
-    If the date is not in the database (it means there are no tweets this date) it adds 0 to the list tweets_per_day.
+    If the date is not in the database (it means there are no tweets this date) it adds 0 to the list 'tweets_per_day'.
     """
     date_tweet = []
     tweets_per_day = []
@@ -200,3 +200,30 @@ def count_tweets(user: dict, from_date: datetime, to_date: datetime):
         'info_tweets_per_day': tweets_per_day,
     }
     return tweets_info
+
+
+def count_likes(user: dict, from_date: datetime, to_date: datetime):
+    """
+    This function counts the number of likes relating to the tweets written on a particular day within the
+    specified period. If the date is not in the database it adds 0 to the list 'likes_number'.
+    number_of_likes - tweet day & number of likes
+    """
+    date_likes = []
+    likes_number = []
+    while from_date <= to_date:
+        cur.execute('''SELECT tweet_date, SUM(no_likes) FROM tweets
+        WHERE tweet_date = %s and user_id = %s GROUP BY tweet_date''', (from_date, user['id']))
+        number_of_likes = cur.fetchone()
+        if not number_of_likes:
+            date_likes.append(from_date)
+            likes_number.append(0)
+        else:
+            date_likes.append(number_of_likes[0])
+            likes_number.append(number_of_likes[1])
+        from_date = from_date + timedelta(days=1)
+
+    likes_info = {
+        'info_date_likes': date_likes,
+        'info_likes_number': likes_number
+    }
+    return likes_info
