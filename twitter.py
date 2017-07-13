@@ -120,16 +120,24 @@ def count_followers(user: dict, from_date: datetime, to_date: datetime) -> dict:
     The function counts all followers for the particular user and for each day within the specified period.
     It returns a dictionary that contains a list of dates and a list of number of followers for each day.
     """
-    cur.execute('''SELECT followed_at, COUNT(*) FROM follows 
-        WHERE followed_at BETWEEN %s AND %s and whom = %s
-        GROUP BY followed_at ORDER BY followed_at;''', (from_date, to_date, user['id']))
-
-    number_of_followers = cur.fetchall()
-    date_when, followers_per_day = zip(*number_of_followers)
+    followers_per_day = []
+    date_when = []
+    while from_date <= to_date:
+        cur.execute('''SELECT followed_at, COUNT(*) FROM follows
+            WHERE followed_at = %s and whom = %s
+            GROUP BY followed_at ORDER BY followed_at;''', (from_date, user['id']))
+        followers = cur.fetchone()
+        if not followers:
+            followers_per_day.append(0)
+        else:
+            followers_per_day.append(followers[1])
+        date_when.append(from_date)
+        from_date = from_date + timedelta(days=1)
 
     followers_info = {
         'info_date_when': date_when,
         'info_followers_per_day': followers_per_day,
+        'info_user': user,
     }
     return followers_info
 
@@ -196,7 +204,7 @@ def count_tweets(user: dict, from_date: datetime, to_date: datetime):
         from_date = from_date + timedelta(days=1)
 
     tweets_info = {
-        'info_date_tweet': date_tweet,
+        'info_date_when': date_tweet,
         'info_tweets_per_day': tweets_per_day,
     }
     return tweets_info
@@ -223,7 +231,7 @@ def count_likes(user: dict, from_date: datetime, to_date: datetime):
         from_date = from_date + timedelta(days=1)
 
     likes_info = {
-        'info_date_likes': date_likes,
+        'info_date_when': date_likes,
         'info_likes_number': likes_number
     }
     return likes_info
