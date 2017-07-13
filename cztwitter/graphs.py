@@ -1,4 +1,5 @@
 from math import floor, ceil
+from time import mktime
 
 import plotly
 from plotly.graph_objs import Scatter, Layout, Figure
@@ -6,9 +7,9 @@ from plotly.graph_objs import Scatter, Layout, Figure
 from cztwitter.twitter import get_user, count_followers, count_tweets, count_likes
 
 
-def render_graph(graph_data: dict):
+def render_graph(graph_data: dict, embeed=True):
     # convert dates to timestamp, to the x axis can be considered a real date
-    when = [(int(x.strftime('%s')) * 1000) for x in graph_data['info_date_when']]
+    when = [(mktime(x.timetuple()) * 1000) for x in graph_data['info_date_when']]
     trace1 = Scatter(
         x=when,
         y=graph_data['info_tweets_per_day'],
@@ -111,11 +112,15 @@ def render_graph(graph_data: dict):
     data.append_trace(trace2, 1, 2)    
     '''
     fig = Figure(data=data, layout=layout)
-    return plotly.offline.plot(
-        fig,
-        output_type='div',
-        include_plotlyjs=False,
-    )
+
+    plot_params = {}
+    if embeed:
+        plot_params = {
+            'output_type': 'div',
+            'include_plotlyjs': False,
+        }
+
+    return plotly.offline.plot(fig, **plot_params)
 
 
 def display_user_data(screen_name, since, til):
