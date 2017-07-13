@@ -1,4 +1,5 @@
 import psycopg2
+import psycopg2.extras
 
 from cztwitter.twitter_wall import twitter_session
 from cztwitter.config import TWITTER, DATABASE
@@ -17,7 +18,7 @@ def init_connections():
             password=DATABASE['password'],
             port=DATABASE['port'],
         )
-        cur = conn.cursor()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     except Exception as e:
         raise Exception('I am unable to connect to the database')
 

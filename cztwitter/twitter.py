@@ -5,18 +5,24 @@ from datetime import datetime, timedelta
 from cztwitter.connections import session, conn, cur
 
 
-def add_new_user(user_id: int, screen_name: str, do_check: bool = False):
+def add_new_user(user_id: int, screen_name: str, do_check: bool = False) -> dict:
     """
     This function verifies, if the user is in the database. If not, this function inserts his id, nick and
     do_check to the table 'twitter_user'.
     """
 
-    cur.execute('''SELECT id FROM twitter_user WHERE id = %s;''', (user_id,))
+    cur.execute('''SELECT * FROM twitter_user WHERE id = %s;''', (user_id,))
     row = cur.fetchone()
     if not row:
         cur.execute('''INSERT INTO twitter_user(id, nick, do_check) VALUES (%s, %s, %s);''',
                     (user_id, screen_name, do_check))
         conn.commit()
+        row = {
+            'id': user_id,
+            'nick': screen_name,
+            'do_check': do_check,
+        }
+    return row
 
 
 def add_followers(who: int, whom: int, followed_at: datetime):
@@ -49,12 +55,8 @@ def get_user(screen_name: str = None, user_id: int = None) -> dict:
     user = cur.execute('''SELECT * FROM twitter_user where nick = %s''', (screen_name,))
     if not user:
         user = get_user_details(screen_name)
-        add_new_user(user['id'], screen_name, True)
-    else:
-        user = {
-            'id': user['id'],
-            'screen_name': user['nick'],
-        }
+        user = add_new_user(user['id'], screen_name)
+
     return user
 
 
@@ -67,7 +69,6 @@ def download_followers(user: dict):
     """
     now = datetime.now()
     next_cursor = -1
-    print(user)
     while next_cursor != 0:
         r = session.get('https://api.twitter.com/1.1/followers/list.json',
                         params={'screen_name': user['screen_name'], 'cursor': next_cursor, 'count': 200}
@@ -208,5 +209,5 @@ def update_do_check(user: dict, status: bool):
     """
     This function changes the value in the do_check column.
     """
-    cur.execute('''UPDATE twitter_user SET do_check = %s WHERE nick = %s''', (status, user['id']))
+    cur.execute('''UPDATE twitter_user SET do_check = %s WHERE id = %s''', (status, user['id']))
     conn.commit()

@@ -26,9 +26,14 @@ def bump_version():
         ifile.write(new_version_str)
 
 
-def cli(*args, **kwargs):
+def check_followers():
+    pass
+
+
+def manage(*args, **kwargs):
     allowed_functions = {
         'bump_version': bump_version,
+        'check_followers': check_followers,
     }
 
     try:
@@ -38,8 +43,6 @@ def cli(*args, **kwargs):
         print('available functions\n')
         for name, ref in allowed_functions.items():
             print("%s  %s" % (name, ref.__doc__))
+        sys.exit(-1)
     else:
         print(to_run(*params))
-
-def manage():
-    pass
