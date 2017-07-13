@@ -1,12 +1,41 @@
 from datetime import datetime, timedelta
 
-from flask import Flask, render_template, request, redirect, url_for
+import binascii
+from flask import Flask, render_template, request, redirect, url_for, session, abort, Markup
+from os import urandom
 
 from cztwitter import config
 from cztwitter.graphs import display_user_data
 from cztwitter.twitter import get_user, update_do_check
 
 app = Flask(__name__)
+app.secret_key = config.SECRET_KEY
+
+
+@app.template_global('csrf_token')
+def csrf_token():
+    if "csrf_token" not in session:
+        session["csrf_token"] = binascii.hexlify(urandom(16)).decode('utf-8')  # str() is ugly
+    return session["csrf_token"]
+
+
+@app.template_global('csrf_token_input')
+def csrf_token_input():
+    return Markup('<input type="hidden" name="csrf_token" value="%s">' % csrf_token())
+
+
+def check_csrf_token():
+    if "csrf_token" not in request.form:
+        abort(400)
+
+    if request.form["csrf_token"] != csrf_token():
+        abort(400)
+
+
+@app.before_request
+def auto_check_csrf():
+    if request.method == "POST" or request.form:
+        check_csrf_token()
 
 
 @app.route('/user/<screen_name>')

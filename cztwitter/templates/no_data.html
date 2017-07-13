@@ -12,7 +12,7 @@
 <h2>Would you like start tracking?</h2>
 
 <form action="{{ url_for('track', screen_name=screen_name) }}" method="post">
-
+    {{ csrf_token_input() }}
     <input type="hidden" name="screen_name" value="{{ screen_name }}">
     <input type="hidden" name="do_check" value="1">
 
