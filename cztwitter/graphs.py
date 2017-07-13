@@ -3,7 +3,7 @@ from math import floor, ceil
 import plotly
 from plotly.graph_objs import Scatter, Layout, Figure
 
-from twitter import get_user, count_followers, count_tweets, count_likes
+from cztwitter.twitter import get_user, count_followers, count_tweets, count_likes
 
 
 def render_graph(graph_data: dict):

@@ -1,2 +1,5 @@
-auth.cfg
-temp-plot.html
+*.egg-info
+dist
+cztwitter/config.py
+deploy/*.retry
+deploy/config.py

@@ -2,10 +2,11 @@ from datetime import datetime, timedelta
 
 from flask import Flask, render_template
 
-from graphs import display_user_data
+from cztwitter import config
+from cztwitter.graphs import display_user_data
 
 app = Flask(__name__)
-app.debug = True
+app.debug = config.DEBUG
 
 
 @app.route('/user/<username>')

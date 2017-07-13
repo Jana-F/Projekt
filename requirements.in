@@ -2,3 +2,5 @@ flask
 jinja2
 psycopg2
 requests
+chaussette
+plotly

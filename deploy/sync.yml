@@ -1,0 +1,87 @@
+---
+- name: update Python project
+  hosts: vanyli
+  vars:
+    version: "{{ lookup('file', '../version') }}"
+    project_name: "{{ lookup('file', '../PROJECT') }}"
+    project_folder: "/var/www/cztwitter/"
+    ansible_python_interpreter: "/usr/bin/python3"
+
+  tasks:
+    - name: generate app key
+      shell: openssl rand -hex 12
+      register: app_key
+
+    - name: create folders
+      file: path="{{ project_folder }}{{ item }}" state=directory
+      become: true
+      with_items:
+        - "{{ app_key.stdout }}"
+        - config
+        - logs
+
+    - name: chown fix root
+      shell: "chown {{ owner }} {{ project_folder }}"
+      become: true
+
+    - name: chown fix current
+      shell: "chown -R {{ owner }} {{ project_folder }}{{ app_key.stdout }}"
+      become: true
+
+    - name: make virtualenv
+      shell: python3.5 -m venv "{{ project_folder }}{{ app_key.stdout }}/venv"
+
+    - name: update pip
+      pip: virtualenv="{{ project_folder }}{{ app_key.stdout }}/venv/" name="pip" extra_args="-U"
+
+    - name: unpack archive
+      unarchive: src="../dist/cztwitter-{{ version }}.tar.gz" dest="{{ project_folder }}{{ app_key.stdout }}"
+
+    - name: install project
+      pip: virtualenv="{{ project_folder }}{{ app_key.stdout }}/venv/" editable=true name="{{ project_folder }}{{ app_key.stdout }}/cztwitter-{{ version }}/" extra_args="--editable"
+
+    - name: copy config
+      copy: src=./config.py dest="{{ project_folder }}{{ app_key.stdout }}/cztwitter-{{ version }}/cztwitter/config.py"
+      become: true
+
+    - name: check if nginx conf exists
+      stat: path=/etc/nginx/sites-enabled/cztwitter
+      register: nginx_config
+
+    - name: copy nginx config
+      become: true
+      template:
+        src=./nginx.conf
+        dest=/etc/nginx/sites-enabled/cztwitter
+      when: not nginx_config.stat.exists
+
+    - name: reload nginx
+      shell: "/etc/init.d/nginx reload"
+      become: true
+      when: not nginx_config.stat.exists
+
+    - name: check if service config exists already
+      stat: path=/etc/circus/components/cztwitter.ini
+      register: service_config
+
+    - name: install conf for circus
+      become: true
+      template: src="./cztwitter.ini" dest="/etc/circus/components/cztwitter.ini"
+      when: not service_config.stat.exists
+
+    - name: symlink current directory
+      file: src="{{ project_folder }}{{ app_key.stdout }}" dest="{{ project_folder }}current" state=link force=true
+
+    #- name: collect static
+    #  shell: "{{ project_folder }}{{ app_key.stdout }}/venv/bin/cztwitter-manage collectstatic --noinput"
+
+    #- name: run migrations
+    #  shell: "{{ project_folder }}{{ app_key.stdout }}/venv/bin/cztwitter-manage migrate"
+
+    - name: restart service
+      shell: "circusctl reloadconfig"
+      when: not service_config.stat.exists
+
+    - name: restart service
+      shell: "circusctl restart cztwitter"
+      #when: service_config.stat.exists
