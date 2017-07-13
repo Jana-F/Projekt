@@ -235,3 +235,11 @@ def count_likes(user: dict, from_date: datetime, to_date: datetime):
         'info_likes_number': likes_number
     }
     return likes_info
+
+
+def update_do_check(user: dict, status: bool):
+    """
+    This function changes the value in the do_check column.
+    """
+    cur.execute('''UPDATE twitter_user SET do_check = %s WHERE nick = %s''', (status, user['id']))
+    conn.commit()
