@@ -20,4 +20,4 @@ if __name__ == '__main__':
     graph_likes = count_likes(user, since, til)
     graph_data.update(graph_likes)
 
-    render_graph(graph_data)
+    render_graph(graph_data, False)
