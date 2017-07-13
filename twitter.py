@@ -1,5 +1,6 @@
 import psycopg2
 from datetime import datetime, timedelta
+
 from twitter_wall import twitter_session
 import configparser
 
