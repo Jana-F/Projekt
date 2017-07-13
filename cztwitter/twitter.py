@@ -1,41 +1,8 @@
-import psycopg2
 from datetime import datetime, timedelta
-from twitter_wall import twitter_session
-import configparser
-
 
 # from pprint import pprint
 
-
-def init_connections():
-    """
-    The program connects to the database. If not successful, raises the exception.
-    Then reads the API Key from the auth.cfg file and API Secret and opens the connection to twitter API.
-    """
-    config = configparser.ConfigParser()
-    config.read('./auth.cfg')
-
-    try:
-        conn = psycopg2.connect(
-            dbname=config['db']['name'],
-            user=config['db']['user'],
-            host=config['db']['host'],
-            password=config['db']['password'],
-            port=config['db']['port'],
-        )
-        cur = conn.cursor()
-    except Exception as e:
-        print(e)
-        raise Exception('I am unable to connect to the database')
-
-    api_key = config['twitter']['key']
-    api_secret = config['twitter']['secret']
-
-    session = twitter_session(api_key, api_secret)
-    return session, conn, cur
-
-
-session, conn, cur = init_connections()
+from cztwitter.connections import session, conn, cur
 
 
 def add_new_user(user_id: int, screen_name: str, do_check: bool = False):

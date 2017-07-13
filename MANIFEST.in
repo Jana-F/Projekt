@@ -1,0 +1,13 @@
+include PROJECT
+include MANIFEST.in
+include setup.py
+include requirements.txt
+
+graft cztwitter
+global-exclude .coverage
+global-exclude nosetests.xml
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude .DS_Store
+exclude cztwitter/config.py
+exclude cztwitter/config.py.sample

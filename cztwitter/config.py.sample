@@ -1,0 +1,15 @@
+TWITTER = {
+    'key': '',
+    'secret': '',
+}
+
+DATABASE = {
+    'host': '',
+    'name': 'cztwitter',
+    'user': '',
+    'port': 5432,
+    'password': '',
+}
+
+
+DEBUG = True

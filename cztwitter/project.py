@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from graphs import render_graph
-from twitter import download_followers, count_followers, download_tweets, get_user, count_tweets, count_likes
+from cztwitter.graphs import render_graph
+from cztwitter.twitter import download_followers, count_followers, download_tweets, get_user, count_tweets, count_likes
 
 if __name__ == '__main__':
     user = get_user('yedpodtrzitko')

@@ -3,9 +3,10 @@ from math import floor, ceil
 import plotly
 from plotly.graph_objs import Scatter, Layout, Figure
 
+from cztwitter.twitter import get_user, count_followers, count_tweets, count_likes
+
 
 def render_graph(graph_data: dict):
-
     # convert dates to timestamp, to the x axis can be considered a real date
     when = [(int(x.strftime('%s')) * 1000) for x in graph_data['info_date_when']]
     trace1 = Scatter(
@@ -60,7 +61,7 @@ def render_graph(graph_data: dict):
     yaxis2 = dict(
         title='tweets & likes',
         showline=True,
-        zeroline=False,
+        zeroline=True,
         titlefont=dict(
             color='rgb(191, 63, 63)'
         ),
@@ -84,7 +85,6 @@ def render_graph(graph_data: dict):
         ))
 
     layout = Layout(
-        title='Twitter Statistics for {}'.format(graph_data['user']['screen_name']),
         xaxis=dict(
             title='dates',
             type='date',
@@ -111,6 +111,24 @@ def render_graph(graph_data: dict):
     data.append_trace(trace2, 1, 2)    
     '''
     fig = Figure(data=data, layout=layout)
-    plotly.offline.plot(
-        fig
+    return plotly.offline.plot(
+        fig,
+        output_type='div',
+        include_plotlyjs=False,
     )
+
+
+def display_user_data(screen_name, since, til):
+    user = get_user(screen_name)
+
+    graph_data = {}
+    graph_followers = count_followers(user, since, til)
+    graph_data.update(graph_followers)
+
+    graph_tweets = count_tweets(user, since, til)
+    graph_data.update(graph_tweets)
+
+    graph_likes = count_likes(user, since, til)
+    graph_data.update(graph_likes)
+
+    return render_graph(graph_data)
