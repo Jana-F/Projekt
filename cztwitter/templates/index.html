@@ -1,8 +1,20 @@
 <html>
-
+<head>
+    <title>Twitter Anal Tool</title>
+</head>
 <body>
 <h1>Twitter Analytics Tool</h1>
 
+
+<h2>Check username</h2>
+<form action="." method="post">
+    {{ csrf_token_input() }}
+
+    <input type="text" name="screen_name">
+
+    <button>Check</button>
+
+</form>
 
 
 </body>

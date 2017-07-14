@@ -13,3 +13,5 @@ DATABASE = {
 
 
 DEBUG = True
+
+SECRET_KEY = 'fill-in-secret-key'

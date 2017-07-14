@@ -1,0 +1,26 @@
+<html>
+<head>
+    <title>Twitter Anal Tool</title>
+</head>
+<body>
+<h1>Twitter Analytics Tool</h1>
+
+
+<h2>User {{ screen_name }} is currently not tracked.</h2>
+
+
+<h2>Would you like start tracking?</h2>
+
+<form action="{{ url_for('track', screen_name=screen_name) }}" method="post">
+    {{ csrf_token_input() }}
+    <input type="hidden" name="screen_name" value="{{ screen_name }}">
+    <input type="hidden" name="do_check" value="1">
+
+    <button>Start tracking</button>
+
+</form>
+
+
+</body>
+
+</html>
