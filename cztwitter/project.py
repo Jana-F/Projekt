@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from cztwitter.graphs import render_graph
-from cztwitter.twitter import download_followers, count_followers, download_tweets, get_user, count_tweets, count_likes
+from cztwitter.twitter import download_followers, get_followers_count, download_tweets, get_user, count_tweets, count_likes
 
 if __name__ == '__main__':
     user = get_user('yedpodtrzitko')
@@ -11,7 +11,7 @@ if __name__ == '__main__':
     # download_tweets(user)
 
     graph_data = {}
-    graph_followers = count_followers(user, since, til)
+    graph_followers = get_followers_count(user, since, til)
     graph_data.update(graph_followers)
     
     graph_tweets = count_tweets(user, since, til)
