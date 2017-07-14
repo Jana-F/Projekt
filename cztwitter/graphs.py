@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from math import floor, ceil
 from time import mktime
 
@@ -124,7 +124,7 @@ def render_graph(graph_data: dict, embeed=True):
     return plotly.offline.plot(fig, **plot_params)
 
 
-def display_user_data(user: dict, since: datetime, til: datetime):
+def display_user_data(user: dict, since: date, til: date):
     graph_data = {}
 
     graph_followers = count_followers(user, since, til)

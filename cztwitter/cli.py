@@ -1,7 +1,11 @@
 import os
 import sys
 
+from datetime import date
+
 import cztwitter as project
+from cztwitter.connections import cur
+from cztwitter.twitter import download_followers, get_user, get_followers_sum
 
 
 def bump_version():
@@ -27,7 +31,18 @@ def bump_version():
 
 
 def check_followers():
-    pass
+    cur.execute('''SELECT * FROM twitter_user WHERE do_check = true''')
+    users = cur.fetchall()
+    if not users:
+        return True
+
+    today = date.today()
+    for user in users:
+        print("handling user %s" % user['screen_name'])
+        user = get_user(user_id=user['id'])
+        if not get_followers_sum(user, today):
+            print('actual downloading')
+            download_followers(user)
 
 
 def manage(*args, **kwargs):

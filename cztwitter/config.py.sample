@@ -15,3 +15,5 @@ DATABASE = {
 DEBUG = True
 
 SECRET_KEY = 'fill-in-secret-key'
+
+DETAILS_LIMIT = 800  # max followers to get detailed stats
