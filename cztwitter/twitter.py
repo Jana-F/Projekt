@@ -99,7 +99,7 @@ def download_followers(user: dict):
     """
     checked_today = get_followers_sum(user)
     if checked_today:
-        return
+        return  # already checked today, no need to do anything else
 
     user_details = download_user_details(user['screen_name'])
     if user_details['followers_count'] < config.DETAILS_LIMIT:
@@ -128,7 +128,7 @@ def download_followers(user: dict):
     insert_followers_sum(user_details)
 
 
-def count_followers(user: dict, from_date: date, to_date: date) -> dict:
+def get_followers_count(user: dict, from_date: date, to_date: date) -> dict:
     """
     Count all followers for the particular user and for each day within the specified period.
     It returns a dictionary that contains a list of dates and a list of number of followers for each day.
@@ -177,22 +177,47 @@ def update_tweet_info(tweet: dict):
     conn.commit()
 
 
-def download_tweets(user: dict):
+def download_tweets(user: dict, hours=72):
     """
     Download a list of dictionaries from api.twitter.com. It contains information about
     tweets and twitter user. Using the add_tweet_info function, the information is inserted to the database.
     It inserts only original tweets (no retweets).
     """
-    r = session.get('https://api.twitter.com/1.1/statuses/user_timeline.json',
-                    params={'screen_name': user['screen_name'], 'count': 200, 'include_rts': False})
-    tweets = r.json()
-    for tweet in tweets:
-        cur.execute('''SELECT tweet_id FROM tweets WHERE tweet_id = %s;''', (tweet['id'],))
-        row = cur.fetchone()
-        if not row:
-            add_tweet_info(tweet)
-        else:
-            update_tweet_info(tweet)
+    date_until = datetime.today()
+    date_since = date_until - timedelta(hours=hours)
+    cur.execute('''SELECT tweet_id 
+    FROM tweets 
+    WHERE tweet_date <= %s AND tweet_date >= %s 
+    AND user_id = %s''', (date_until, date_since, user['id']))
+    existing_tweets = cur.fetchall() or []
+    existing_tweets = {x['tweet_id'] for x in existing_tweets}
+    max_id = None
+    keep_loading = True
+    while keep_loading:
+        r = session.get(
+            'https://api.twitter.com/1.1/statuses/user_timeline.json',
+            params={
+                'screen_name': user['screen_name'],
+                'count': 20,
+                'include_rts': False,
+                'max_id': max_id,
+            })
+        if not r.ok:
+            break
+
+        tweets = r.json()
+        for tweet in tweets:
+            created_at = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+            if created_at < date_since:
+                keep_loading = False
+                break  # if we get too old tweet, quit
+
+            if tweet['id'] not in existing_tweets:
+                add_tweet_info(tweet)
+            else:
+                update_tweet_info(tweet)
+
+            max_id = max_id and min(max_id, tweet['id']) or tweet['id']
 
 
 def count_tweets(user: dict, from_date: date, to_date: date):

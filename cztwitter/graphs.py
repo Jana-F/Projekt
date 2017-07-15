@@ -1,11 +1,11 @@
-from datetime import datetime, date
+from datetime import date
 from math import floor, ceil
 from time import mktime
 
 import plotly
 from plotly.graph_objs import Scatter, Layout, Figure
 
-from cztwitter.twitter import get_user, count_followers, count_tweets, count_likes
+from cztwitter.twitter import get_user, get_followers_count, count_tweets, count_likes
 
 
 def render_graph(graph_data: dict, embeed=True):
@@ -127,7 +127,7 @@ def render_graph(graph_data: dict, embeed=True):
 def display_user_data(user: dict, since: date, til: date):
     graph_data = {}
 
-    graph_followers = count_followers(user, since, til)
+    graph_followers = get_followers_count(user, since, til)
     graph_data.update(graph_followers)
 
     graph_tweets = count_tweets(user, since, til)

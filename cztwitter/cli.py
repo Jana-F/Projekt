@@ -5,7 +5,7 @@ from datetime import date
 
 import cztwitter as project
 from cztwitter.connections import cur
-from cztwitter.twitter import download_followers, get_user, get_followers_sum
+from cztwitter.twitter import download_followers, get_user, get_followers_sum, download_tweets
 
 
 def bump_version():
@@ -30,25 +30,26 @@ def bump_version():
         ifile.write(new_version_str)
 
 
-def check_followers():
+def automated_check():
+    """
+    Does an automated check for all stuff we want (tweets, followers, likes, rts)
+    """
     cur.execute('''SELECT * FROM twitter_user WHERE do_check = true''')
     users = cur.fetchall()
     if not users:
         return True
 
-    today = date.today()
     for user in users:
         print("handling user %s" % user['screen_name'])
         user = get_user(user_id=user['id'])
-        if not get_followers_sum(user, today):
-            print('actual downloading')
-            download_followers(user)
+        download_followers(user)
+        download_tweets(user)
 
 
 def manage(*args, **kwargs):
     allowed_functions = {
         'bump_version': bump_version,
-        'check_followers': check_followers,
+        'automated_check': automated_check,
     }
 
     try:
