@@ -25,4 +25,4 @@ requests==2.18.1
 six==1.10.0               # via chaussette, plotly, traitlets
 traitlets==4.3.2          # via jupyter-core, nbformat
 urllib3==1.21.1           # via requests
-werkzeug==0.12.2          # via flask
+werkzeug==0.15.3          # via flask
